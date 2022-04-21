@@ -70,37 +70,9 @@ def location(barcode, option):
     else:
         print ('Crear Holding')
         print ('Traspasar ejemplar al nuevo holding')
-        holdingsTypeId = dato_holding['holdingsTypeId']
-        permanentLocationId = dato_holding['permanentLocationId']
-        effectiveLocationId = dato_holding['effectiveLocationId']
-        callNumberTypeId = dato_holding['callNumberTypeId']
-        callNumber = dato_holding['callNumber']
-        callNumberPrefix = dato_holding['callNumberPrefix']
-        callNumberSuffix = dato_holding['callNumberSuffix']
-        payload = {
-			"holdingsTypeId": f"{holdingsTypeId}",
-			"instanceId": f"{instanceId}",
-			"permanentLocationId": f"{permanentLocationId}",
-			"effectiveLocationId": f"{effectiveLocationId}",
-			"callNumberTypeId": f"{callNumberTypeId}",
-			"callNumber": f"{callNumber}",
-			"callNumberSuffix": f"{callNumberSuffix}",
-            "callNumberPrefix": f"{callNumberPrefix}",
-    		"discoverySuppress": False
-        }
-        print (code)
-        print (locationId2)
-        okapi_headers = {"x-okapi-token": OKAPY_TOKEN,"x-okapi-tenant": OKAPY_TENANT,"content-type": "application/json"}
-        #response = requests.put(url3, json=payload, headers=okapi_headers)
+
 
                 
-
-def crear_holdings():
-    print()
-
-def mover_de_holdings():    
-    print()
-
 
 if __name__ == "__main__":
     #--------- inicio lectura credenciales -----------
@@ -121,7 +93,7 @@ if __name__ == "__main__":
     option = str(input())
 
     #--------- lectura archivo Barcode que se mueven -----------
-    fileName= "C:\\Users\\chenr\\OneDrive\\UAI\\Folio\\Api Folio\\Jobs\\Barcode.xlsx"
+    fileName= ""
     df = pd.read_excel(fileName, engine='openpyxl', dtype=str)
     df = df.apply(lambda x: x.fillna(""))
     totalrows=len(df)
