@@ -76,18 +76,7 @@ def location(barcode, option):
 
 if __name__ == "__main__":
     #--------- inicio lectura credenciales -----------
-    dic=dic= {}
-    f = open("uai_credenciales.json",)
-    cred = json.load(f)
-    for i in cred['okapi']:
-        dic=i
-    f.close()
-    okapi_user = dic['user']
-    okapy_password = dic['password']
-    OKAPY_TENANT=dic['x_okapi_tenant']
-    OKAPY_URL= dic['x_okapi_url']
-    OKAPY_TOKEN = token()
-    
+  
     #--------- inicio selección nuevo holding -----------
     print("1 VIÑA CG"+"\n"+"2 PRE1 CG"+"\n"+"3 POST CG")
     option = str(input())
