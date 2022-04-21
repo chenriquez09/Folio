@@ -1,0 +1,142 @@
+from urllib import request
+import requests
+import json
+from datetime import datetime, date, timedelta
+import pandas as pd
+import csv
+import sys
+
+def token():
+    pathPattern = "authn/login"
+    try:
+        u=okapi_user
+        p=okapy_password
+        pathPattern=pathPattern
+        userpass={
+                  "username":u,
+                  "password":p
+                 }
+        okapi_headers = {"x-okapi-tenant": OKAPY_TENANT,"content-type": "application/json", "accept": "application/json"}
+        path = pathPattern
+        url = OKAPY_URL + path
+        req = requests.post(url, json=userpass, headers=okapi_headers,timeout=10)
+        token= req.headers['x-okapi-token']
+        return(token)
+    except ValueError:
+        print("General Error on Post:"+req.text+"\nError Number: "+req.status_code)
+#----------------------------Fin obtención del token-------------------------
+
+def location(barcode, option):
+    path_item = f"item-storage/items?query=barcode={barcode}"
+    url_item = OKAPY_URL + path_item
+    okapi_headers = {"x-okapi-token": OKAPY_TOKEN,"x-okapi-tenant": OKAPY_TENANT,"content-type": "application/json"}
+    req_item = requests.get(url_item, headers=okapi_headers, timeout=40)
+    json_str_item = json.loads(req_item.text)  
+    codlocation = []  
+    for dato_item in json_str_item['items']:
+        holdingId = dato_item['holdingsRecordId']
+        #print ('holdingsRecordId ', holdingId)
+        path_holding = f"holdings-storage/holdings?query=id={holdingId}"
+        url_holding = OKAPY_URL + path_holding
+        req_holding = requests.get(url_holding, headers=okapi_headers, timeout=40)
+        json_str_holding = json.loads(req_holding.text)
+        
+        for dato_holding in json_str_holding['holdingsRecords']:
+            instanceId = dato_holding['instanceId']
+            #print ("instanceId",instanceId)
+            path_holding2 = f"holdings-storage/holdings?query=instanceId={instanceId}"
+            url_holding2 = OKAPY_URL + path_holding2
+            req_holding2 = requests.get(url_holding2, headers=okapi_headers, timeout=40)
+            json_str_holding2 = json.loads(req_holding2.text)
+            
+            for dato_location in json_str_holding2['holdingsRecords']:
+                path_location = f"locations?query=id={dato_location['effectiveLocationId']}"
+                url_location = OKAPY_URL + path_location
+                req_location = requests.get(url_location, headers=okapi_headers, timeout=40)
+                json_str_location = json.loads(req_location.text)
+                
+                for x in json_str_location['locations']:
+                    loc=x['code']
+                    codlocation.append(loc)
+
+    str_match = [s for s in codlocation if option in s]
+    if len(str_match) > 0:
+        dato1=x
+        code = dato1['code']
+        locationId2 = dato1['id']
+    
+
+
+    else:
+        print ('Crear Holding')
+        print ('Traspasar ejemplar al nuevo holding')
+        holdingsTypeId = dato_holding['holdingsTypeId']
+        permanentLocationId = dato_holding['permanentLocationId']
+        effectiveLocationId = dato_holding['effectiveLocationId']
+        callNumberTypeId = dato_holding['callNumberTypeId']
+        callNumber = dato_holding['callNumber']
+        callNumberPrefix = dato_holding['callNumberPrefix']
+        callNumberSuffix = dato_holding['callNumberSuffix']
+        payload = {
+			"holdingsTypeId": f"{holdingsTypeId}",
+			"instanceId": f"{instanceId}",
+			"permanentLocationId": f"{permanentLocationId}",
+			"effectiveLocationId": f"{effectiveLocationId}",
+			"callNumberTypeId": f"{callNumberTypeId}",
+			"callNumber": f"{callNumber}",
+			"callNumberSuffix": f"{callNumberSuffix}",
+            "callNumberPrefix": f"{callNumberPrefix}",
+    		"discoverySuppress": False
+        }
+        print (code)
+        print (locationId2)
+        okapi_headers = {"x-okapi-token": OKAPY_TOKEN,"x-okapi-tenant": OKAPY_TENANT,"content-type": "application/json"}
+        #response = requests.put(url3, json=payload, headers=okapi_headers)
+
+                
+
+def crear_holdings():
+    print()
+
+def mover_de_holdings():    
+    print()
+
+
+if __name__ == "__main__":
+    #--------- inicio lectura credenciales -----------
+    dic=dic= {}
+    f = open("uai_credenciales.json",)
+    cred = json.load(f)
+    for i in cred['okapi']:
+        dic=i
+    f.close()
+    okapi_user = dic['user']
+    okapy_password = dic['password']
+    OKAPY_TENANT=dic['x_okapi_tenant']
+    OKAPY_URL= dic['x_okapi_url']
+    OKAPY_TOKEN = token()
+    
+    #--------- inicio selección nuevo holding -----------
+    print("1 VIÑA CG"+"\n"+"2 PRE1 CG"+"\n"+"3 POST CG")
+    option = str(input())
+
+    #--------- lectura archivo Barcode que se mueven -----------
+    fileName= "C:\\Users\\chenr\\OneDrive\\UAI\\Folio\\Api Folio\\Jobs\\Barcode.xlsx"
+    df = pd.read_excel(fileName, engine='openpyxl', dtype=str)
+    df = df.apply(lambda x: x.fillna(""))
+    totalrows=len(df)
+    print(f"INFO ORDERS Total: {totalrows}") 
+    reg=0   
+    for i, row in df.iterrows():    
+        barcode=str(row['BARCODE'])
+        path = f"item-storage/items?query=barcode={barcode}"
+        url= OKAPY_URL + path
+        okapi_headers = {"x-okapi-token": OKAPY_TOKEN,"x-okapi-tenant": OKAPY_TENANT,"content-type": "application/json"}
+        req = requests.get(url, headers=okapi_headers, timeout=40)
+        json_str = json.loads(req.text)
+        reg=1+reg
+        print ("Caso N: ", reg)
+        print (barcode)
+        locationcode = location(barcode, option)
+    
+ 
