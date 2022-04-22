@@ -3,8 +3,7 @@ import requests
 import json
 from datetime import datetime, date, timedelta
 import pandas as pd
-import csv
-import sys
+    
 
 def location(barcode, option):
     path_item = f"item-storage/items?query=barcode={barcode}"
